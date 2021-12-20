@@ -1,6 +1,9 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.TerminateBroadcast;
+import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.objects.CPU;
 
 /**
  * CPU service is responsible for handling the {@link DataPreProcessEvent}.
@@ -10,14 +13,25 @@ import bgu.spl.mics.MicroService;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class CPUService extends MicroService {
-    public CPUService(String name) {
-        super("Change_This_Name");
-        // TODO Implement this
+    private final CPU cpu;
+
+    public CPUService(String name, CPU cpu) {
+        super(name);
+        this.cpu = cpu;
     }
 
     @Override
     protected void initialize() {
-        // TODO Implement this
+        // Subscribe to ticks
+        subscribeBroadcast(TickBroadcast.class, (TickBroadcast b)-> {cpu.updateTime(b.getCurrTime());});
+
+        // Subscribe to terminate
+        subscribeBroadcast(TerminateBroadcast.class, (TerminateBroadcast b)->{
+            cpu.prepareForTermination();
+            terminate();
+            // TODO print
+            //System.out.println(getName() + " terminating");
+            });
 
     }
 }

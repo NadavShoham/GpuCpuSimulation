@@ -12,10 +12,20 @@ import bgu.spl.mics.MicroService;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class GPUService extends MicroService {
+    private final GPU gpu;
+    private final Queue<TrainModelEvent> TrainWaitingQueue;
+    private final Queue<TestModelEvent> TestWaitingQueue;
+    private TrainModelEvent currTrainingModelEvent;
+    private boolean receivedTerminate;
+    private MessageBusImpl bus;
 
-    public GPUService(String name) {
-        super("Change_This_Name");
-        // TODO Implement this
+    public GPUService(String name, GPU gpu) {
+        super(name);
+        this.gpu = gpu;
+        this.TrainWaitingQueue = new LinkedList<>();
+        this.TestWaitingQueue = new LinkedList<>();
+        receivedTerminate = false;
+        bus = MessageBusImpl.getInstance();
     }
 
     @Override

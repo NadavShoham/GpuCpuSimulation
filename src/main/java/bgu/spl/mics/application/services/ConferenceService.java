@@ -1,6 +1,13 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.PublishConfrenceBroadcast;
+import bgu.spl.mics.application.messages.PublishResultsEvent;
+import bgu.spl.mics.application.messages.TerminateBroadcast;
+import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.objects.ConfrenceInformation;
+
+import java.util.List;
 
 /**
  * Conference service is in charge of
@@ -12,14 +19,23 @@ import bgu.spl.mics.MicroService;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class ConferenceService extends MicroService {
-    public ConferenceService(String name) {
-        super("Change_This_Name");
-        // TODO Implement this
+    private final ConfrenceInformation conference;
+
+    public ConferenceService(String name, ConfrenceInformation conference) {
+        super(name);
+        this.conference = conference;
     }
 
     @Override
     protected void initialize() {
-        // TODO Implement this
+        // Subscribe to publishResult
+        subscribeEvent(PublishResultsEvent.class, (PublishResultsEvent event)-> {conference.aggregateSuccessfulModels(event.getModel());});
 
+        // Subscribe to Ticks
+        subscribeBroadcast(TickBroadcast.class, (TickBroadcast b)-> {conference.updateTime(b.getCurrTime());});
+
+        // Subscribe to Terminate
+        subscribeBroadcast(TerminateBroadcast.class, (TerminateBroadcast b)->{
+            terminateConference();});
     }
 }

@@ -1,6 +1,12 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.MicroService;
+import bgu.spl.mics.*;
+import bgu.spl.mics.application.messages.*;
+import bgu.spl.mics.application.objects.Model;
+import bgu.spl.mics.application.objects.Student;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Student is responsible for sending the {@link TrainModelEvent},
@@ -19,7 +25,18 @@ public class StudentService extends MicroService {
 
     @Override
     protected void initialize() {
-        // TODO Implement this
+        // Subscribe to publishConference
+        subscribeBroadcast(PublishConfrenceBroadcast.class, (PublishConfrenceBroadcast b)->{student.updatePapersRead(b.getResults());});
 
+        // Subscribe to activateNextModel
+        subscribeBroadcast(ActivateNextModelBroadcast.class, (ActivateNextModelBroadcast b)-> {activateModelProcess();});
+
+        // Subscribe to Terminate
+        subscribeBroadcast(TerminateBroadcast.class, (TerminateBroadcast b)->{
+            student.prepareForTermination();
+            // TODO print
+            //System.out.println(getName() + " terminating");
+            terminate();
+        });
     }
 }

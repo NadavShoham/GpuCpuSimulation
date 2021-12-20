@@ -38,4 +38,18 @@ public class ConferenceService extends MicroService {
         subscribeBroadcast(TerminateBroadcast.class, (TerminateBroadcast b)->{
             terminateConference();});
     }
+
+    public void publishResults(int numOfPublications) {
+        sendBroadcast(new PublishConfrenceBroadcast(numOfPublications));
+        // TODO print
+        //System.out.println(getName() + " sending conference ");
+        terminateConference();
+    }
+
+    private void terminateConference() {
+        conference.prepareForTermination();
+        terminate();
+        // TODO print
+        //System.out.println(getName() + " terminating");
+    }
 }

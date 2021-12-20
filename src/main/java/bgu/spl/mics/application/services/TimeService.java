@@ -17,10 +17,15 @@ import java.util.TimerTask;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class TimeService extends MicroService{
+	private int speed;
+	private int duration;
+	private int currTime;
 
-	public TimeService() {
-		super("Change_This_Name");
-		// TODO Implement this
+	public TimeService(int speed, int duration) {
+		super("TimeService");
+		this.speed = speed;
+		this.duration = duration;
+		this.currTime = 1;
 	}
 
 	@Override

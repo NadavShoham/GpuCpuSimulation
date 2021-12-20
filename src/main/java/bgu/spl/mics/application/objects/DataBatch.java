@@ -6,5 +6,29 @@ package bgu.spl.mics.application.objects;
  */
 
 public class DataBatch {
-    
+    private Data data;
+    private int start_index;
+    private int GPUId;
+
+    DataBatch(Data data, int start_index, int GPUId){
+        this.data = data;
+        this.start_index = start_index;
+        this.GPUId = GPUId;
+    }
+
+    public Data getData() {
+        return data;
+    }
+
+    public void setData(Data data) {
+        this.data = data;
+    }
+
+    public int getStart_index() {
+        return start_index;
+    }
+
+    public int getGPUId() {
+        return GPUId;
+    }
 }

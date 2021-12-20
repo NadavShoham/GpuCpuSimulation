@@ -18,9 +18,16 @@ import java.util.NoSuchElementException;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class StudentService extends MicroService {
-    public StudentService(String name) {
-        super("Change_This_Name");
-        // TODO Implement this
+    private final Student student;
+    private Iterator<Model> iter;
+    private Model currModel;
+
+
+    public StudentService(String name, Student student) {
+        super(name);
+        this.student = student;
+        iter = student.getModels().iterator();
+        currModel = iter.next();
     }
 
     @Override
@@ -38,5 +45,39 @@ public class StudentService extends MicroService {
             //System.out.println(getName() + " terminating");
             terminate();
         });
+    }
+
+    public void activateModelProcess() {
+        if (currModel != null){
+            Future <Model> f = sendEvent(new TrainModelEvent(currModel));
+            // TODO print
+            //System.out.println(getName() + " sending event " + currModel.getName() + " to train");
+            Object result = f.get();
+            if (result == null) {
+                currModel = null;
+                return;
+            }
+            Future<String> fTest = sendEvent(new TestModelEvent(currModel));
+            // TODO print
+            //System.out.println(getName() + " sending event " + currModel.getName() + " to test");
+            result = fTest.get();
+            if (result == null) {
+                currModel = null;
+                return;
+            }
+            else if ("Good".equals(result)){
+                student.incrementPublications();
+                f = sendEvent(new PublishResultsEvent(currModel));
+                // TODO print
+                //System.out.println(getName() + " sending event " + currModel.getName() + " to publish");
+            }
+            try {
+                currModel = iter.next();
+            } catch (NoSuchElementException e) {
+                currModel = null;
+            }
+            sendBroadcast(new ActivateNextModelBroadcast());
+        }
+
     }
 }

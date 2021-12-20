@@ -16,7 +16,11 @@ public interface MessageBus {
      * <p>
      * @param <T>  The type of the result expected by the completed event.
      * @param type The type to subscribe to,
-     * @param m    The subscribing micro-service.
+     * @param m    The subscribing microservice.
+     * @INV: isMSRegistered(m) == true
+     *       type != null && m != null
+     * @PRE: none
+     * @POST: isMSSubscribedToEvent(type, m) == true
      */
     <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m);
 
@@ -25,6 +29,10 @@ public interface MessageBus {
      * <p>
      * @param type 	The type to subscribe to.
      * @param m    	The subscribing micro-service.
+     * @INV: isMSRegistered(m) == true
+     *       type != null && m != null
+     * @PRE: none
+     * @POST: isMSSubscribedToBroadcast(type, m) == true
      */
     void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m);
 
@@ -37,6 +45,9 @@ public interface MessageBus {
      * @param <T>    The type of the result expected by the completed event.
      * @param e      The completed event.
      * @param result The resolved result of the completed event.
+     * @INV: result != null && e != null
+     * @PRE: none
+     * @POST: getFuture(e).isDone() == true
      */
     <T> void complete(Event<T> e, T result);
 
@@ -45,6 +56,9 @@ public interface MessageBus {
      * micro-services subscribed to {@code b.getClass()}.
      * <p>
      * @param b 	The message to added to the queues.
+     * @INV: b != null
+     * @PRE: none
+     * @POST: ∀m | isMSSubscribedToBroadcast(b.getClass(), m) == true --> isBroadcastInQueue(b,m) == true
      */
     void sendBroadcast(Broadcast b);
 
@@ -57,23 +71,33 @@ public interface MessageBus {
      * @param e     	The event to add to the queue.
      * @return {@link Future<T>} object to be resolved once the processing is complete,
      * 	       null in case no micro-service has subscribed to {@code e.getClass()}.
+     * @INV: b != null
+     * @PRE: none
+     * @POST: m = peekEventQueue(e.getClass()), isEventInQueue(e, m) == true
      */
     <T> Future<T> sendEvent(Event<T> e);
 
     /**
      * Allocates a message-queue for the {@link MicroService} {@code m}.
      * <p>
-     * @param m the micro-service to create a queue for.
+     * @param m the microservice to create a queue for.
+     * @INV: m != null
+     * @PRE: none
+     * @POST: isMSRegistered(m) == true
      */
     void register(MicroService m);
 
     /**
      * Removes the message queue allocated to {@code m} via the call to
-     * {@link #register(bgu.spl.mics.MicroService)} and cleans all references
+     * {@link #register(MicroService)} and cleans all references
      * related to {@code m} in this message-bus. If {@code m} was not
      * registered, nothing should happen.
      * <p>
      * @param m the micro-service to unregister.
+     * @INV: m != null
+     * @PRE: none
+     * @POST: isMSRegistered(m) == false
+     * @POST: ∀ message | isMSSubscribedToMessage( message, m) == false
      */
     void unregister(MicroService m);
 
@@ -91,7 +115,28 @@ public interface MessageBus {
      * @return The next message in the {@code m}'s queue (blocking).
      * @throws InterruptedException if interrupted while waiting for a message
      *                              to became available.
+     * @INV: m != null
+     * @PRE: none
+     * @POST: message != null
      */
     Message awaitMessage(MicroService m) throws InterruptedException;
+
+    //ours
+
+    boolean isMSRegistered(MicroService m);
+
+    <T> boolean isMSSubscribedToEvent(Class<? extends Event<T>> type, MicroService m);
+
+    boolean isMSSubscribedToBroadcast(Class<? extends Broadcast> type, MicroService m);
+
+    boolean isMSSubscribedToMessage(Class<? extends Message> type, MicroService m);
+
+    boolean isBroadcastInQueue(Broadcast b, MicroService m);
+
+    <T> boolean isEventInQueue(Event<T> e, MicroService m);
+
+    <T> Future<T> getFuture(Event<T> e);
+
+    <T> MicroService peekEventQueue(Class<? extends Event<T>> type);
     
 }

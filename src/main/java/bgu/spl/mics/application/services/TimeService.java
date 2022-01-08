@@ -44,7 +44,7 @@ public class TimeService extends MicroService{
 					//if (currTime % 1000 == 0) System.out.println("TickTIme: " + currTime);
 				}
 			}
-		}, 0, 1);
+		}, 0, speed);
 		terminate();
 	}
 
